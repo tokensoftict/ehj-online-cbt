@@ -28,7 +28,7 @@ class DashboardController extends Controller
     public final function logout(Request $request) : RedirectResponse
     {
         $request->session()->invalidate();
-        return redirect()->intended(route('studentlogin', absolute: false));
+        return redirect()->intended(route('student.login', absolute: false));
     }
 
     /**
