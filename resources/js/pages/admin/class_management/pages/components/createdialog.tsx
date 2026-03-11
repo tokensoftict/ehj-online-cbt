@@ -13,15 +13,17 @@ const CreateDialog = ({
                           children,
                           open,
                           setOpen,
+                          className,
                       }: {
     title: string;
    // trigger: React.ReactNode;
     children: React.ReactNode;
     open: boolean;
     setOpen: (value: boolean) => void;
+    className?: string;
 }) => (
     <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-[425px]" onInteractOutside={(e) => e.preventDefault()} onEscapeKeyDown={(e) => e.preventDefault()}>
+        <DialogContent className={className || "sm:max-w-[425px]"} onInteractOutside={(e) => e.preventDefault()} onEscapeKeyDown={(e) => e.preventDefault()}>
             <DialogHeader>
                 <DialogTitle>{title}</DialogTitle>
                 <DialogDescription>

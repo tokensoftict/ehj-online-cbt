@@ -24,6 +24,7 @@ return new class extends Migration
             $table->text('d')->nullable();
             $table->string('correct_option')->nullable();
             $table->date('date_added')->nullable();
+            $table->softDeletes();
             $table->timestamps();
         });
     }

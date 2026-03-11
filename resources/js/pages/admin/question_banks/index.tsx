@@ -1,4 +1,3 @@
-import GeneralSubjectController from '@/actions/App/Http/Controllers/Administrator/GeneralSubjectController';
 import QuestionBanksController from '@/actions/App/Http/Controllers/Administrator/QuestionBanksController';
 import AdminLayout from '@/components/admin/AdminLayout';
 import InputError from '@/components/input-error';
@@ -15,10 +14,10 @@ import { Input } from '@/components/template-ui/input';
 import { Label } from '@/components/template-ui/label';
 import { useToast } from '@/hooks/use-toast';
 import TableActions from '@/pages/admin/class_management/pages/components/tableactions';
-import { Form } from '@inertiajs/react';
+import { Form, router } from '@inertiajs/react';
 import DT from 'datatables.net-dt';
 import DataTable from 'datatables.net-react';
-import { Eye, FileText, LoaderCircle, Plus } from 'lucide-react';
+import { Eye, FileText, LoaderCircle, Plus, CheckCircle, XCircle } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import CreateDialog from '../class_management/pages/components/createdialog';
@@ -57,6 +56,8 @@ export default function QuestionBanks({ url, subjects, student_classes }: { url:
                         Active
                     </Badge>
                 );
+            case 'Completed':
+                return <Badge className="bg-success text-success-foreground">Completed</Badge>;
             case 'Draft':
                 return <Badge variant="secondary">Draft</Badge>;
             case 'Archived':
@@ -164,6 +165,23 @@ export default function QuestionBanks({ url, subjects, student_classes }: { url:
                                                         icon: Eye,
                                                         href: QuestionBanksController.show.url(  { question_bank: row.id })
                                                     },
+                                                    {
+                                                        type: "button",
+                                                        label: row.status === 'Completed' ? "Mark as Draft" : "Mark as Completed",
+                                                        icon: row.status === 'Completed' ? XCircle : CheckCircle,
+                                                        onClick: () => {
+                                                            router.post(`/admin/question-banks/${row.id}/toggle-status`, {}, {
+                                                                preserveScroll: true,
+                                                                onSuccess: () => {
+                                                                    toast({
+                                                                        title: 'Status Updated',
+                                                                        description: 'Test container status updated successfully.',
+                                                                    });
+                                                                    tableRef.current?.dt().ajax.reload(null, false);
+                                                                }
+                                                            });
+                                                        }
+                                                    }
                                                 ]}
                                             />,
                                         );

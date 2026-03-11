@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * Class StudentClass
- * 
+ *
  * @property int $id
  * @property int $class_name_id
  * @property int $class_section_id
@@ -20,7 +20,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property bool $status
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- * 
+ *
  * @property ClassGroup $class_group
  * @property ClassName $class_name
  * @property ClassSection $class_section
@@ -46,6 +46,10 @@ class StudentClass extends Model
 		'class_group_id',
 		'status'
 	];
+
+    public function getNameAttribute(){
+        return $this->class_name->name." ".$this->class_section->name;
+    }
 
 	public function class_group()
 	{

@@ -4,6 +4,7 @@ import { CardHeader } from '@/components/ui/card';
 import { Award, BookOpen, Clock, Users } from 'lucide-react';
 import { Link } from '@inertiajs/react';
 import student from '@/routes/student';
+import admin from '@/routes/admin';
 
 
 
@@ -22,12 +23,13 @@ function Intro() {
                             <div className="w-8 h-8 bg-gradient-primary rounded-full"></div>
                             <span className="text-xl font-bold text-primary">EHJ Model College</span>
                         </div>
-                        <Button  variant="default">
-                            <Link href={student.login()}>
-                                Student Login
-                            </Link>
 
+                        <Button variant="outline">
+                            <Link href={admin.login()}>
+                                Administrator Login
+                            </Link>
                         </Button>
+
                     </div>
                 </header>
 
@@ -43,13 +45,15 @@ function Intro() {
                                 Welcome to Eucharistic Heart of Jesus Model College Ilorin's state-of-the-art CBT system, where academic excellence meets innovative technology. Experience seamless online assessments designed for student success.
                             </p>
                             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                                <Button size="lg" onClick={() => {}} className="text-lg px-8 py-4">
+                                <Button size="lg" onClick={() => { }} className="text-lg px-8 py-4">
                                     <Link href={student.login()}>
                                         Start Your Test
                                     </Link>
                                 </Button>
                                 <Button size="lg" variant="outline" className="text-lg px-8 py-4">
-                                    Learn More
+                                    <Link href={admin.login()}>
+                                        Administrator Portal
+                                    </Link>
                                 </Button>
                             </div>
                         </div>
@@ -147,11 +151,18 @@ function Intro() {
                             <p className="text-muted-foreground text-lg mb-8">
                                 Access your personalized dashboard and start your computer-based test with confidence.
                             </p>
-                            <Button size="lg" onClick={() => {}} className="text-lg px-8 py-4">
-                                <Link href={student.login()}>
-                                    Access Student Portal
-                                </Link>
-                            </Button>
+                            <div className="flex flex-col sm:flex-row gap-4 justify-center mt-4">
+                                <Button size="lg" onClick={() => { }} className="text-lg px-8 py-4">
+                                    <Link href={student.login()}>
+                                        Access Student Portal
+                                    </Link>
+                                </Button>
+                                <Button size="lg" variant="outline" onClick={() => { }} className="text-lg px-8 py-4">
+                                    <Link href={admin.login()}>
+                                        Access Admin Portal
+                                    </Link>
+                                </Button>
+                            </div>
                         </div>
                     </section>
                 </main>

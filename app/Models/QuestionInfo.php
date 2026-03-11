@@ -38,7 +38,8 @@ class QuestionInfo extends Model
 	protected $fillable = [
 		'name',
 		'student_class_id',
-		'general_subject_id'
+		'general_subject_id',
+        'status'
 	];
 
 	public function general_subject()

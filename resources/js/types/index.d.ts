@@ -2,7 +2,7 @@ import { InertiaLinkProps } from '@inertiajs/react';
 import { LucideIcon } from 'lucide-react';
 
 export interface Auth {
-    user: User;
+    user: Student;
 }
 
 export interface BreadcrumbItem {
@@ -97,29 +97,72 @@ export interface QuestionBank {
     name: string
     student_class_id: number
     general_subject_id: number
-    subject : string
-    class : string
-    questions : string
-    status : string
+    subject: string
+    class: string
+    questions: string
+    status: string
+    created_at: string
+    updated_at: string
+}
+
+
+export interface QuestionInfo {
+    id: number
+    name: string
+    status: string
+    student_class_id: number
+    general_subject_id: number
     created_at: string
     updated_at: string
 }
 
 
 export interface Question {
+    id: number | null
+    question: string | null
+    question_info_id: number | null
+    question_instruction_id: number | null
+    question_no: number | null
+    a: string | null
+    b: string | null
+    c: string | null
+    d: string | null
+    correct_option: string | null
+    date_added: string | null
+    created_at: string | null
+    updated_at: string | null
+    difficulty: "Easy" | "Medium" | "Hard" | null,
+    topic: "" | null
+}
+
+
+export interface Student {
     id: number
-    question: string,
-    question_info_id : number
-    question_instruction_id : number | null,
-    question_no : number
-    a : string
-    b : string
-    c : string
-    d : string
-    correct_option : string
-    date_added : string
-    created_at : string
-    updated_at: string,
-    difficulty : "Easy" | "Medium" | "Hard",
-    topic : ""
+    reg_no: string
+    surname: string
+    firstname: string
+    lastname: string
+    password: string
+    age: number
+    sex: string
+    user_id: number
+    student_class_id: number
+    student_class: StudentClasses
+    user: User
+}
+
+
+export interface Sex {
+    name: string
+    value: string
+}
+
+export interface Instruction {
+    id: number
+    title: string
+    instruction: string
+    student_class_id: number
+    question_info_id: number
+    created_at: string
+    updated_at: string
 }

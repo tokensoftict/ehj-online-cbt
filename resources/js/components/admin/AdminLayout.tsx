@@ -1,22 +1,20 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import {
-  Menu,
-  LogOut,
-} from "lucide-react";
+import { Menu, LogOut } from "lucide-react";
 import { AdminSidebar } from "./AdminSidebar";
 import { useToast } from "@/hooks/use-toast";
+import { router } from "@inertiajs/react";
+import { type SharedData } from '@/types';
+import { usePage } from '@inertiajs/react';
 
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { toast } = useToast();
+  const { auth } = usePage<SharedData>().props;
 
   const handleLogout = () => {
-    toast({
-      title: "Logged out successfully",
-      description: "You have been logged out of the admin panel",
-    });
+    router.post('/admin/logout');
   };
 
   return (
@@ -30,9 +28,8 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
       )}
 
       {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-30 w-64 transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${
-        sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-      }`}>
+      <div className={`fixed inset-y-0 left-0 z-30 w-64 transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}>
         <AdminSidebar onClose={() => setSidebarOpen(false)} />
       </div>
 
@@ -54,8 +51,8 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
 
           <div className="flex items-center gap-3">
             <div className="hidden sm:block text-right">
-              <p className="text-sm font-medium">Admin User</p>
-              <p className="text-xs text-muted-foreground">admin@ehj.edu.ng</p>
+              <p className="text-sm font-medium">{auth.user.name}</p>
+              <p className="text-xs text-muted-foreground">{auth.user.email}</p>
             </div>
             <Avatar>
               <AvatarFallback className="bg-primary text-primary-foreground">
@@ -75,7 +72,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
 
         {/* Page content */}
         <main className="p-6">
-            {children}
+          {children}
         </main>
       </div>
     </div>

@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
  * Class QuestionInstruction
  * 
  * @property int $id
+ * @property string $title
  * @property string $instruction
  * @property int $student_class_id
  * @property int $question_info_id
@@ -34,6 +35,7 @@ class QuestionInstruction extends Model
 	];
 
 	protected $fillable = [
+		'title',
 		'instruction',
 		'student_class_id',
 		'question_info_id'
@@ -48,4 +50,11 @@ class QuestionInstruction extends Model
 	{
 		return $this->belongsTo(StudentClass::class);
 	}
+
+	public function questions_and_options()
+	{
+		return $this->hasMany(QuestionsAndOption::class , 'question_instruction_id');
+	}
+
+
 }

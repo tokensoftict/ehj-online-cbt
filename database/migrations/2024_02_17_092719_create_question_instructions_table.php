@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('question_instructions', function (Blueprint $table) {
             $table->engine = 'InnoDB';
             $table->id();
+            $table->string("title");
             $table->longText('instruction');
             $table->foreignId('student_class_id')->constrained()->cascadeOnDelete();
             $table->foreignId('question_info_id')->constrained()->cascadeOnDelete();

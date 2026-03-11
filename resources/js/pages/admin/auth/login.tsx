@@ -16,7 +16,7 @@ const Login = () => {
             <div className="w-full max-w-md">
                 <div className="text-center mb-8">
                     <img
-                        src="https://www.qualitexpharma.com/qualitex_logo.png"
+                        src="https://ehjmodelcollegeilorin.com/wp-content/uploads/2023/12/logo-dark.png"
                         alt="EHJ Model College"
                         className="mx-auto h-20 w-auto mb-4"
                     />
@@ -37,40 +37,40 @@ const Login = () => {
                             {...Admin.processLogin.form()}
                             resetOnSuccess={['surname']} className="space-y-4">
                             {({ processing, errors }) => (
-                            <>
-                                <div className="space-y-2">
-                                    <Label htmlFor="username">Username</Label>
-                                    <Input
-                                        id="username"
-                                        type="text"
-                                        name="username"
-                                        placeholder="Enter your username"
-                                        required
-                                    />
+                                <>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="username">Username</Label>
+                                        <Input
+                                            id="username"
+                                            type="text"
+                                            name="username"
+                                            placeholder="Enter your username"
+                                            required
+                                        />
 
-                                    <InputError message={errors.username} />
-                                </div>
+                                        <InputError message={errors.username} />
+                                    </div>
 
-                                <div className="space-y-2">
-                                    <Label htmlFor="password">Password</Label>
-                                    <Input
-                                        id="password"
-                                        type="password"
-                                        name="password"
-                                        placeholder="Enter your password"
-                                        required
-                                    />
-                                    <InputError message={errors.password} />
-                                </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="password">Password</Label>
+                                        <Input
+                                            id="password"
+                                            type="password"
+                                            name="password"
+                                            placeholder="Enter your password"
+                                            required
+                                        />
+                                        <InputError message={errors.password} />
+                                    </div>
 
-                                <Button
-                                    type="submit"
-                                    className="w-full"
-                                    disabled={processing}
-                                >
-                                    {processing ? "Signing in..." : "Sign In"}
-                                </Button>
-                            </>
+                                    <Button
+                                        type="submit"
+                                        className="w-full"
+                                        disabled={processing}
+                                    >
+                                        {processing ? "Signing in..." : "Sign In"}
+                                    </Button>
+                                </>
 
                             )}
                         </Form>

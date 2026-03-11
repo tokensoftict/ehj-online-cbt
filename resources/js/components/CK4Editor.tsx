@@ -4,19 +4,19 @@ import {CKEditor} from 'ckeditor4-react';
 interface CK4EditorProps {
     data: string;
     name: string;
-    onChange?: (data: string) => void;
+    onChange?: (data: never) => void;
     placeholder?: string;
 }
 
-export default function MathEditor({ data, onChange, name ,placeholder }: CK4EditorProps) {
+export default function MathEditor({ data, onChange, name, placeholder }: CK4EditorProps) {
 
     return (
         <div className="ckeditor-wrapper">
             <div className="mt-3 items-center ">
                 <CKEditor
-                    initialValues={data}
+                    initData={data}
                     name={name}
-                    onChange={onChange}
+                    onChange={(data :never) => onChange ? onChange(data) : null}
                     config={{
                         toolbar: [
                             { name: 'clipboard', items: ['Cut', 'Copy', 'Paste', 'Undo', 'Redo'] },

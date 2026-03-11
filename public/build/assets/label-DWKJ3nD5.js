@@ -1,1 +1,0 @@
-import{r,j as t,c as d,d as i}from"./app-CtAzDAef.js";import{R as a}from"./index-Cj69SuXa.js";const l=i("text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"),m=r.forwardRef(({className:s,...e},o)=>t.jsx(a,{ref:o,className:d(l(),s),...e}));m.displayName=a.displayName;export{m as L};

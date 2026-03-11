@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Administrator;
 
-use App\Enums\StatusEnum;
+
 use App\Http\Controllers\Controller;
 use App\Models\GeneralSubject;
 use App\Models\QuestionInfo;
@@ -56,6 +56,7 @@ class QuestionBanksController extends Controller
         $questions = QuestionsAndOption::query()->where('question_info_id', $id)->orderBy('question_no');
         return DataTables::of($questions)
             ->addIndexColumn()
+            ->rawColumns(['question', 'a', 'b', 'c', 'd'])
             ->make(true);
     }
 
@@ -115,5 +116,16 @@ class QuestionBanksController extends Controller
         });
 
         return back()->with('success', 'Test Container deleted successfully');
+    }
+
+    public function toggle_status(string $id)
+    {
+        $question = QuestionInfo::query()->find($id);
+        if ($question) {
+            $question->status = $question->status === 'Completed' ? 'Draft' : 'Completed';
+            $question->save();
+        }
+
+        return back()->with('success', 'Test Container status updated successfully');
     }
 }

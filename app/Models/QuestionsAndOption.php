@@ -8,6 +8,7 @@ namespace App\Models;
 
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * Class QuestionsAndOption
@@ -23,6 +24,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $d
  * @property string|null $correct_option
  * @property Carbon|null $date_added
+ * @property string|null $deleted_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  *
@@ -30,6 +32,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class QuestionsAndOption extends Model
 {
+	use SoftDeletes;
 	protected $table = 'questions_and_options';
 
 	protected $casts = [
@@ -51,4 +54,10 @@ class QuestionsAndOption extends Model
 		'correct_option',
 		'date_added'
 	];
+
+
+	public function question_instruction()
+	{
+		return $this->belongsTo(QuestionInstruction::class , 'question_instruction_id');
+	}
 }

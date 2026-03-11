@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Student\StudentLoginRequest;
+use App\Models\Student;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -32,7 +34,18 @@ class HomeController extends Controller
      */
     public final function processLogin(StudentLoginRequest $request) : RedirectResponse
     {
-        $request->session()->regenerate();
-        return redirect()->intended(route('student.dashboard', absolute: false));
+        $student = Student::where('reg_no', $request->reg_number)
+            ->where('surname', $request->surname)
+            ->first();
+
+        if ($student) {
+            Auth::guard('student')->login($student);
+            $request->session()->regenerate();
+            return redirect()->intended(route('student.dashboard', absolute: false));
+        }
+
+        return back()->withErrors([
+            'reg_number' => 'Invalid registration number or surname.',
+        ]);
     }
 }
