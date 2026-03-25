@@ -70,6 +70,7 @@ class PracticeQuestionController extends Controller
             'duration' => 'required|integer|min:1',
             'total_score_per_question' => 'required|integer|min:1',
             'instruction' => 'nullable|string',
+            'practice_limit' => 'required|integer|min:0',
         ]);
 
         DB::transaction(function () use ($request) {
@@ -81,6 +82,8 @@ class PracticeQuestionController extends Controller
                 'duration' => $request->duration,
                 'total_score_per_question' => $request->total_score_per_question,
                 'instruction' => $request->instruction,
+                'practice_limit' => $request->practice_limit,
+                'show_result' => $request->show_result ?? true,
                 'is_approved' => false, // default
             ]);
 
@@ -105,6 +108,7 @@ class PracticeQuestionController extends Controller
             'duration' => 'required|integer|min:1',
             'total_score_per_question' => 'required|integer|min:1',
             'instruction' => 'nullable|string',
+            'practice_limit' => 'required|integer|min:0',
         ]);
 
         $practice = PracticeQuestion::find($id);
@@ -118,6 +122,8 @@ class PracticeQuestionController extends Controller
                     'duration' => $request->duration,
                     'total_score_per_question' => $request->total_score_per_question,
                     'instruction' => $request->instruction,
+                    'practice_limit' => $request->practice_limit,
+                    'show_result' => $request->show_result ?? $practice->show_result,
                 ]);
 
                 $practice->question_infos()->sync($request->question_info_ids);
@@ -202,5 +208,21 @@ class PracticeQuestionController extends Controller
         $cleanRegNo = str_replace(['/', '\\'], '_', $result->student->reg_no);
         $fileName = 'result_' . $cleanRegNo . '.pdf';
         return $pdf->download($fileName);
+    }
+
+    public function delete_result(string $id, string $result_id)
+    {
+        $result = PracticeResult::where('practice_question_id', $id)->findOrFail($result_id);
+        
+        DB::transaction(function () use ($result, $id) {
+            // Also delete the test session to allow a clean restart
+            \App\Models\TestSession::where('student_id', $result->student_id)
+                ->where('practice_question_id', $id)
+                ->delete();
+            
+            $result->delete();
+        });
+
+        return back()->with('success', 'Practice attempt deleted and reset successfully');
     }
 }

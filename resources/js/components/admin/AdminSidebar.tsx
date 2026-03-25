@@ -1,4 +1,4 @@
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import { Button } from "@/components/template-ui/button";
 import { useState } from 'react';
 import {
@@ -6,7 +6,7 @@ import {
     Users,
     BookOpen,
     GraduationCap,
-    X, NotebookIcon, Upload, ChevronDown, ChevronUp, UserCog
+    X, NotebookIcon, Upload, ChevronDown, ChevronUp, UserCog, ShieldCheck
 } from 'lucide-react';
 
 
@@ -19,46 +19,68 @@ const navigation = [
         name: "Dashboard",
         href: "/admin/dashboard",
         icon: LayoutDashboard,
+        permission: "view_dashboard"
     },
     {
         name: "Subject Management",
         href: "/admin/general-subjects",
         icon: NotebookIcon,
+        permission: "manage_subjects"
     },
     {
         name: "Class Management",
         href: "/admin/class-groups",
         icon: GraduationCap,
+        permission: "manage_classes"
     },
     {
         name: "Question Banks",
         href: "/admin/question-banks",
         icon: BookOpen,
+        permission: "manage_question_banks"
     },
     {
         name: "Student Management",
         href: "/admin/students",
         icon: Users,
+        permission: "manage_students"
     },
     {
         name: "File Uploads",
         href: "/admin/file-uploads",
         icon: Upload,
+        permission: "manage_file_uploads"
     },
     {
         name: "Admin Management",
         href: "/admin/admins",
         icon: Users,
+        permission: "manage_admins"
     },
     {
         name: "Practice Questions",
         href: "/admin/practice-questions",
         icon: BookOpen,
+        permission: "manage_practice_questions"
+    },
+    {
+        name: "Roles & Permissions",
+        href: "/admin/roles",
+        icon: ShieldCheck,
+        permission: "manage_roles_permissions"
     },
 ];
 
 export const AdminSidebar = ({ onClose }: AdminSidebarProps) => {
     const [isProfileOpen, setIsProfileOpen] = useState(false);
+    const { auth } = usePage<any>().props;
+
+    const filteredNavigation = navigation.filter(item => {
+        if (item.permission) {
+            return auth.user.permissions.includes(item.permission);
+        }
+        return true;
+    });
 
     return (
         <div className="bg-card border-r border-border h-full flex flex-col">
@@ -99,7 +121,7 @@ export const AdminSidebar = ({ onClose }: AdminSidebarProps) => {
        */}
             <nav className="flex-1 p-4 overflow-y-auto">
                 <ul className="space-y-2">
-                    {navigation.map((item) => (
+                    {filteredNavigation.map((item) => (
                         <li key={item.name}>
                             <Link
                                 href={item.href}

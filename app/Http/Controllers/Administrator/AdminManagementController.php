@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Administrator;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
+use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
@@ -15,20 +16,24 @@ class AdminManagementController extends Controller
 {
     public function index()
     {
+        $roles = Role::where('guard_name', 'admin')->get();
         return Inertia::render('admin/admins/index', [
-            'url' => route('admin.admins.datatable')
+            'url' => route('admin.admins.datatable'),
+            'roles' => $roles
         ]);
     }
 
     public function data_table()
     {
-        $admins = User::query()->orderBy('id', 'desc');
+        $admins = User::with('roles')->orderBy('id', 'desc');
         return DataTables::of($admins)
             ->addIndexColumn()
+            ->addColumn('roles_list', function ($row) {
+                return $row->getRoleNames()->toArray();
+            })
             ->addColumn('action', function ($row) {
-            return '';
-        })
-
+                return '';
+            })
             ->rawColumns(['action'])
             ->make(true);
     }
@@ -40,10 +45,16 @@ class AdminManagementController extends Controller
             'email' => 'required|email|unique:users,email',
             'username' => 'required|string|unique:users,username|max:255',
             'password' => ['required', 'string', 'confirmed', Password::min(8)],
+            'roles' => 'nullable|array',
         ]);
 
         $validated['password'] = Hash::make($validated['password']);
-        User::create($validated);
+        $user = User::create($validated);
+        
+        if ($request->has('roles')) {
+            $user->syncRoles($request->roles);
+        }
+
         return back()->with('success', 'Admin created successfully');
     }
 
@@ -55,6 +66,7 @@ class AdminManagementController extends Controller
             'name' => 'required|string|max:255',
             'email' => ['required', 'email', Rule::unique('users')->ignore($user->id)],
             'username' => ['required', 'string', 'max:255', Rule::unique('users')->ignore($user->id)],
+            'roles' => 'nullable|array',
         ];
 
         if ($request->filled('password')) {
@@ -71,6 +83,11 @@ class AdminManagementController extends Controller
         }
 
         $user->update($validated);
+        
+        if ($request->has('roles')) {
+            $user->syncRoles($request->roles);
+        }
+
         return back()->with('success', 'Admin updated successfully');
     }
 

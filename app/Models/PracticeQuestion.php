@@ -44,7 +44,9 @@ class PracticeQuestion extends Model
 		'end_schedule_date' => 'datetime',
 		'duration' => 'int',
 		'total_score_per_question' => 'int',
-		'is_approved' => 'bool'
+		'is_approved' => 'bool',
+		'practice_limit' => 'int',
+		'show_result' => 'bool'
 	];
 
 	protected $fillable = [
@@ -56,7 +58,9 @@ class PracticeQuestion extends Model
 		'duration',
 		'total_score_per_question',
 		'instruction',
-		'is_approved'
+		'is_approved',
+		'practice_limit',
+		'show_result'
 	];
 
 	public function general_subject()

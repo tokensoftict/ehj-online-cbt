@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import student from '@/routes/student';
 import { type SharedData } from '@/types';
 import { usePage } from '@inertiajs/react';
+import { Badge } from '@/components/template-ui/badge';
 
 interface HistoryResult {
     id: number;
@@ -23,6 +24,7 @@ interface HistoryResult {
             name: string;
         };
         duration: number;
+        show_result: boolean;
     };
 }
 
@@ -134,29 +136,43 @@ export default function StudentHistory({ results }: HistoryProps) {
 
                                     <div className="flex items-center gap-6 w-full sm:w-auto mt-4 sm:mt-0 pt-4 sm:pt-0 border-t sm:border-0 border-border/50">
                                         <div className="flex flex-row justify-start gap-8 w-full sm:w-auto">
-                                            <div className="flex flex-col items-start sm:items-end">
-                                                <span className="text-xs text-muted-foreground uppercase font-medium tracking-wider mb-1">Score</span>
-                                                <div className="flex items-baseline gap-1">
-                                                    <span className="text-2xl font-bold text-college-maroon">{result.score}</span>
-                                                    <span className="text-sm font-medium text-muted-foreground">/ {result.total_questions * (result.practice_question?.duration || 1) /* Needs exact score logic based on generic weight */}</span>
-                                                </div>
-                                            </div>
+                                            {result.practice_question?.show_result ? (
+                                                <>
+                                                    <div className="flex flex-col items-start sm:items-end">
+                                                        <span className="text-xs text-muted-foreground uppercase font-medium tracking-wider mb-1">Score</span>
+                                                        <div className="flex items-baseline gap-1">
+                                                            <span className="text-2xl font-bold text-college-maroon">{result.score}</span>
+                                                            <span className="text-sm font-medium text-muted-foreground">/ {result.total_questions * (result.practice_question?.duration || 1)}</span>
+                                                        </div>
+                                                    </div>
 
-                                            <div className="flex flex-col items-start sm:items-end">
-                                                <span className="text-xs text-muted-foreground uppercase font-medium tracking-wider mb-1">Time</span>
-                                                <span className="text-sm font-medium text-foreground py-1">
-                                                    {formatTimeTaken(result.time_taken)}
-                                                </span>
-                                            </div>
+                                                    <div className="flex flex-col items-start sm:items-end">
+                                                        <span className="text-xs text-muted-foreground uppercase font-medium tracking-wider mb-1">Time</span>
+                                                        <span className="text-sm font-medium text-foreground py-1">
+                                                            {formatTimeTaken(result.time_taken)}
+                                                        </span>
+                                                    </div>
+                                                </>
+                                            ) : (
+                                                <div className="flex flex-col items-start sm:items-end">
+                                                    <span className="text-xs text-muted-foreground uppercase font-medium tracking-wider mb-1">Status</span>
+                                                    <Badge variant="outline" className="text-amber-600 bg-amber-50 border-amber-200 py-1">
+                                                        Awaiting Review
+                                                    </Badge>
+                                                </div>
+                                            )}
                                         </div>
 
-                                        <div className="hidden sm:block h-12 w-px bg-border/50"></div>
-
-                                        <Button asChild variant="default" className="w-full sm:w-auto  hover:bg-college-maroon-dark text-white rounded-lg shadow-sm">
-                                            <Link href={`/student/practice/${result.practice_question_id}/results/${result.id}`}>
-                                                View Review
-                                            </Link>
-                                        </Button>
+                                        {result.practice_question?.show_result && (
+                                            <>
+                                                <div className="hidden sm:block h-12 w-px bg-border/50"></div>
+                                                <Button asChild variant="default" className="w-full sm:w-auto  hover:bg-college-maroon-dark text-white rounded-lg shadow-sm">
+                                                    <Link href={`/student/practice/${result.practice_question_id}/results/${result.id}`}>
+                                                        View Review
+                                                    </Link>
+                                                </Button>
+                                            </>
+                                        )}
                                     </div>
                                 </div>
                             </Card>

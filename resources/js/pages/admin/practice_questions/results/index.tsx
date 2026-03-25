@@ -5,10 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/template-
 import { useToast } from '@/hooks/use-toast';
 import DT from 'datatables.net-dt';
 import DataTable from 'datatables.net-react';
-import { DownloadCloud, ArrowLeft, FileText, LoaderCircle } from 'lucide-react';
+import { DownloadCloud, ArrowLeft, FileText, LoaderCircle, Trash2, RotateCcw } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { Link } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 
 interface PracticeQuestionTitle {
     id: number;
@@ -26,6 +26,23 @@ export default function PracticeResults({ url, practice }: { url: string, practi
         setExporting(true);
         window.location.href = `/admin/practice-questions/${practice.id}/results/export`;
         setTimeout(() => setExporting(false), 2000); // Reset state after a brief moment
+    };
+
+    const handleReset = (resultId: number) => {
+        if (!window.confirm("Are you sure you want to reset this attempt? This will delete the result and allow the student to retake it.")) {
+            return;
+        }
+
+        router.delete(`/admin/practice-questions/${practice.id}/results/${resultId}`, {
+            preserveScroll: true,
+            onSuccess: () => {
+                tableRef.current?.dt().ajax.reload(null, false);
+                toast({
+                    title: 'Attempt Reset',
+                    description: 'The practice attempt has been deleted successfully.',
+                });
+            }
+        });
     };
 
     return (
@@ -84,19 +101,31 @@ export default function PracticeResults({ url, practice }: { url: string, practi
                                 { title: 'Time Taken', data: 'time_formatted' },
                                 { title: 'Date Attempted', data: 'date' },
                                 {
-                                    title: 'Export',
+                                    title: 'Actions',
                                     data: null,
                                     orderable: false,
                                     searchable: false,
                                     render: function (data, type, row: any) {
                                         const div = document.createElement('div');
                                         createRoot(div).render(
-                                            <a
-                                                href={`/admin/practice-questions/${practice.id}/results/${row.id}/pdf`}
-                                                className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded shadow-sm text-white bg-red-600 hover:bg-red-700"
-                                            >
-                                                Download PDF
-                                            </a>
+                                            <div className="flex items-center space-x-2">
+                                                <a
+                                                    href={`/admin/practice-questions/${practice.id}/results/${row.id}/pdf`}
+                                                    className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded shadow-sm text-white bg-red-600 hover:bg-red-700"
+                                                    title="Download PDF"
+                                                >
+                                                    <DownloadCloud className="h-4 w-4 mr-1" /> PDF
+                                                </a>
+                                                <Button
+                                                    variant="destructive"
+                                                    size="sm"
+                                                    onClick={() => handleReset(row.id)}
+                                                    className="h-8 bg-amber-600 hover:bg-amber-700 border-amber-600"
+                                                    title="Reset Attempt"
+                                                >
+                                                    <RotateCcw className="h-3.5 w-3.5 mr-1" /> Reset
+                                                </Button>
+                                            </div>
                                         );
                                         return div;
                                     },

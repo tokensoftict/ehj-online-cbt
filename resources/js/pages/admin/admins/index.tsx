@@ -16,14 +16,17 @@ import { createRoot } from 'react-dom/client';
 import TableActions from '@/pages/admin/class_management/pages/components/tableactions';
 import AdminManagementController from '@/actions/App/Http/Controllers/Administrator/AdminManagementController';
 
+import { Checkbox } from '@/components/template-ui/checkbox';
+
 export interface Admin {
     id: number;
     name: string;
     email: string;
     username: string;
+    roles_list: string[];
 }
 
-export default function AdminManager({ url }: { url: string }) {
+export default function AdminManager({ url, roles }: { url: string, roles: any[] }) {
     const tableRef = useRef<any>(null);
     const { toast } = useToast();
     const [open, setOpen] = useState(false);
@@ -35,7 +38,8 @@ export default function AdminManager({ url }: { url: string }) {
         email: '',
         username: '',
         password: '',
-        password_confirmation: ''
+        password_confirmation: '',
+        roles: [] as string[]
     });
 
     useEffect(() => {
@@ -45,7 +49,8 @@ export default function AdminManager({ url }: { url: string }) {
                 email: admin.email,
                 username: admin.username,
                 password: '',
-                password_confirmation: ''
+                password_confirmation: '',
+                roles: admin.roles_list
             });
             adminForm.clearErrors();
         } else {
@@ -54,7 +59,8 @@ export default function AdminManager({ url }: { url: string }) {
                 email: '',
                 username: '',
                 password: '',
-                password_confirmation: ''
+                password_confirmation: '',
+                roles: []
             });
             adminForm.clearErrors();
         }
@@ -135,6 +141,13 @@ export default function AdminManager({ url }: { url: string }) {
                                 { title: 'Name', data: 'name' },
                                 { title: 'Email', data: 'email' },
                                 { title: 'Username', data: 'username' },
+                                {
+                                    title: 'Roles',
+                                    data: 'roles_list',
+                                    render: (data: any) => {
+                                        return Array.isArray(data) ? (data.join(', ') || 'No Roles') : (data || 'No Roles');
+                                    }
+                                },
                                 {
                                     title: 'Actions',
                                     data: null,
@@ -242,6 +255,35 @@ export default function AdminManager({ url }: { url: string }) {
                                         className="focus:ring-2 focus:ring-primary/30"
                                     />
                                 </div>
+                            </div>
+
+                            <div className="grid gap-4">
+                                <Label>Assign Roles</Label>
+                                <div className="grid grid-cols-2 gap-4 border rounded-md p-4 bg-muted/20">
+                                    {roles.map(role => (
+                                        <div key={role.id} className="flex items-center space-x-2">
+                                            <Checkbox
+                                                id={`role-${role.id}`}
+                                                checked={adminForm.data.roles.includes(role.name)}
+                                                onCheckedChange={(checked) => {
+                                                    const current = [...adminForm.data.roles];
+                                                    if (checked) {
+                                                        adminForm.setData('roles', [...current, role.name]);
+                                                    } else {
+                                                        adminForm.setData('roles', current.filter(r => r !== role.name));
+                                                    }
+                                                }}
+                                            />
+                                            <Label
+                                                htmlFor={`role-${role.id}`}
+                                                className="text-sm font-normal cursor-pointer"
+                                            >
+                                                {role.name}
+                                            </Label>
+                                        </div>
+                                    ))}
+                                </div>
+                                <InputError message={adminForm.errors.roles as string} />
                             </div>
 
                             <DialogFooter>

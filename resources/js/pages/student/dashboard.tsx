@@ -11,6 +11,8 @@ import {
 } from 'lucide-react';
 import { Link } from '@inertiajs/react';
 import { Card, CardContent } from '@/components/template-ui/card';
+import { useToast } from '@/hooks/use-toast';
+import { useEffect } from 'react';
 import student from '@/routes/student';
 import { type SharedData } from '@/types';
 import { usePage } from '@inertiajs/react';
@@ -20,8 +22,25 @@ interface DashboardProps {
 }
 
 export default function Dashboard({ practiceQuestions }: DashboardProps) {
-    const { auth } = usePage<SharedData>().props;
+    const { auth, flash } = usePage<SharedData>().props;
+    const { toast } = useToast();
     const randomIcons = [Atom, BookOpen, Calculator, Microscope, Zap];
+
+    useEffect(() => {
+        if (flash.success) {
+            toast({
+                title: 'Success',
+                description: flash.success,
+            });
+        }
+        if (flash.error) {
+            toast({
+                title: 'Error',
+                description: flash.error,
+                variant: 'destructive',
+            });
+        }
+    }, [flash]);
     const randomColors = [
         'from-blue-500 to-blue-600',
         'from-purple-500 to-purple-600',
@@ -76,7 +95,7 @@ export default function Dashboard({ practiceQuestions }: DashboardProps) {
                 {/* Welcome Section */}
                 <div className="mb-8">
                     <h2 className="text-3xl font-bold text-college-maroon-dark mb-2">
-                        WELCOME BACK, {auth.user?.surname.toUpperCase()} {auth.user?.firstname.toUpperCase()} {auth.user?.lastname.toUpperCase()}!
+                        WELCOME, {auth.user?.surname.toUpperCase()} {auth.user?.firstname.toUpperCase()} {auth.user?.lastname.toUpperCase()}!
                     </h2>
                     <p className="text-muted-foreground text-lg">
                         Ready to take your next test? Choose a subject below to get started.

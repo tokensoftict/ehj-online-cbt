@@ -8,9 +8,10 @@ interface PracticeInstructionProps extends SharedData {
     practice: any;
     totalQuestions: number;
     hasActiveSession: boolean;
+    attemptsCount: number;
 }
 
-export default function Instructions({ practice, totalQuestions, hasActiveSession }: PracticeInstructionProps) {
+export default function Instructions({ practice, totalQuestions, hasActiveSession, attemptsCount }: PracticeInstructionProps) {
     const { auth } = usePage<SharedData>().props;
     if (!practice) {
         return (
@@ -32,7 +33,8 @@ export default function Instructions({ practice, totalQuestions, hasActiveSessio
         duration,
         instruction,
         general_subject,
-        question_infos
+        question_infos,
+        practice_limit
     } = practice;
 
     const subjectNames = question_infos?.map((qi: any) => qi.general_subject?.name || qi.name).filter(Boolean);
@@ -92,6 +94,23 @@ export default function Instructions({ practice, totalQuestions, hasActiveSessio
                             </div>
                         </CardContent>
                     </Card>
+
+                    {practice_limit > 0 && (
+                        <Card className="shadow-card border-l-4 border-l-blue-500 md:col-span-2">
+                            <CardContent className="p-6 flex items-start space-x-4">
+                                <div className="w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center flex-shrink-0 mt-1">
+                                    <AlertCircle className="w-6 h-6 text-blue-500" />
+                                </div>
+                                <div>
+                                    <h3 className="font-semibold text-lg text-college-maroon-dark">Practice Limit</h3>
+                                    <p className="text-3xl font-bold text-blue-500 mt-1">{attemptsCount} / {practice_limit} <span className="text-lg font-normal text-muted-foreground">attempts used</span></p>
+                                    <p className="text-sm text-muted-foreground mt-1">
+                                        {practice_limit - attemptsCount} attempt(s) remaining.
+                                    </p>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
                 </div>
 
                 <Card className="shadow-elevation border-0 mb-8">

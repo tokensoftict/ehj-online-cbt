@@ -1,17 +1,29 @@
 import { Head, Link } from '@inertiajs/react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/template-ui/card';
 import { Button } from '@/components/template-ui/button';
-import { CheckCircle, Clock, Target, TrendingUp, History, PlayCircle, BarChart3 } from 'lucide-react';
+import { CheckCircle, Clock, Target, TrendingUp, History, PlayCircle, BarChart3, ChevronDown, Check, X, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState } from 'react';
+import { Badge } from '@/components/template-ui/badge';
+import MathPreview from '@/components/MathPreview';
 
 interface ResultProps {
     practice: any;
     latestAttempt: any;
     allAttempts: any[];
+    reviewData: Record<string, any[]>;
 }
 
-export default function Results({ practice, latestAttempt, allAttempts }: ResultProps) {
+export default function Results({ practice, latestAttempt, allAttempts, reviewData }: ResultProps) {
     const isImproved = allAttempts.length > 1 && latestAttempt.score > allAttempts[1].score;
     const bestScore = Math.max(...allAttempts.map(a => a.score));
+    const [showReview, setShowReview] = useState(false);
+
+    // Review Pagination State
+    const [currentReviewSubject, setCurrentReviewSubject] = useState(Object.keys(reviewData)[0] || "");
+    const [currentReviewIndex, setCurrentReviewIndex] = useState(0);
+
+    const currentReviewQuestions = reviewData[currentReviewSubject] || [];
+    const currentReviewQuestion = currentReviewQuestions[currentReviewIndex];
 
     const formatTime = (seconds: number) => {
         const m = Math.floor(seconds / 60);
@@ -138,6 +150,147 @@ export default function Results({ practice, latestAttempt, allAttempts }: Result
                     </Card>
                 )}
 
+                {/* Review Questions Section */}
+                <div className="pt-2">
+                    <Button
+                        variant="outline"
+                        className="w-full py-6 text-lg font-semibold bg-white border-2 border-college-maroon/20 text-college-maroon hover:bg-college-maroon hover:text-white transition-all shadow-sm"
+                        onClick={() => setShowReview(!showReview)}
+                    >
+                        {showReview ? "Hide Performance Review" : "Review All Questions & Answers"}
+                        <ChevronDown className={`ml-2 h-5 w-5 transition-transform ${showReview ? 'rotate-180' : ''}`} />
+                    </Button>
+
+                    {showReview && (
+                        <div className="mt-6 space-y-6 animate-in fade-in slide-in-from-top-4 duration-500">
+                            {/* Subject Tabs */}
+                            <div className="flex flex-wrap gap-2 justify-center">
+                                {Object.keys(reviewData).map(subject => (
+                                    <Button
+                                        key={subject}
+                                        size="sm"
+                                        variant={currentReviewSubject === subject ? 'default' : 'outline'}
+                                        onClick={() => {
+                                            setCurrentReviewSubject(subject);
+                                            setCurrentReviewIndex(0);
+                                        }}
+                                        className="rounded-full px-4"
+                                    >
+                                        {subject}
+                                    </Button>
+                                ))}
+                            </div>
+
+                            {/* Current Question Display */}
+                            {currentReviewQuestion && (
+                                <div className="space-y-4">
+                                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 px-1">
+                                        <div className="flex items-center space-x-2">
+                                            <div className="h-6 w-1 rounded bg-college-maroon"></div>
+                                            <h3 className="text-xl font-bold text-gray-800">{currentReviewSubject}</h3>
+                                            <span className="text-sm text-muted-foreground">Question {currentReviewIndex + 1} of {currentReviewQuestions.length}</span>
+                                        </div>
+
+                                        <div className="flex items-center gap-2">
+                                            {currentReviewQuestion.is_correct ? (
+                                                <Badge className="bg-green-500 hover:bg-green-600 rounded-full py-1 px-3"><Check className="w-3 h-3 mr-1" /> Correct</Badge>
+                                            ) : currentReviewQuestion.student_answer ? (
+                                                <Badge variant="destructive" className="bg-red-500 hover:bg-red-600 rounded-full py-1 px-3"><X className="w-3 h-3 mr-1" /> Incorrect</Badge>
+                                            ) : (
+                                                <Badge variant="outline" className="text-gray-500 border-gray-300 rounded-full py-1 px-3"><AlertCircle className="w-3 h-3 mr-1" /> Unanswered</Badge>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Question Card */}
+                                    <Card className={`border-l-4 ${currentReviewQuestion.is_correct ? 'border-l-green-500' : currentReviewQuestion.student_answer ? 'border-l-red-500' : 'border-l-gray-300'} shadow-md bg-white overflow-hidden`}>
+                                        <CardHeader className="pb-3 bg-gray-50/50">
+                                            <MathPreview
+                                                className="text-gray-800 font-medium prose prose-sm max-w-none"
+                                                content={currentReviewQuestion.question || ``}
+                                            />
+                                        </CardHeader>
+                                        <CardContent className="pt-4 pb-4">
+                                            <div className="grid grid-cols-1 gap-3">
+                                                {Object.entries(currentReviewQuestion.options).map(([key, value]: [string, any]) => {
+                                                    const isCorrectOption = key === currentReviewQuestion.correct_option;
+                                                    const isStudentChoice = key === currentReviewQuestion.student_answer;
+
+                                                    let variantClass = "border-gray-200 bg-white";
+                                                    let icon = null;
+
+                                                    if (isCorrectOption) {
+                                                        variantClass = "border-green-500 bg-green-50 text-green-800 ring-1 ring-green-500";
+                                                        icon = <Check className="w-4 h-4 text-green-600" />;
+                                                    } else if (isStudentChoice && !currentReviewQuestion.is_correct) {
+                                                        variantClass = "border-red-500 bg-red-50 text-red-800 ring-1 ring-red-500";
+                                                        icon = <X className="w-4 h-4 text-red-600 flex-shrink-0" />;
+                                                    }
+
+                                                    return (
+                                                        <div
+                                                            key={key}
+                                                            className={`flex items-start justify-between p-4 rounded-xl border-2 transition-all ${variantClass}`}
+                                                        >
+                                                            <div className="flex items-start">
+                                                                <span className={`mt-0.5 flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center mr-4 font-bold text-sm ${isCorrectOption ? 'bg-green-600 text-white' : isStudentChoice ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-600'}`}>
+                                                                    {key}
+                                                                </span>
+                                                                <MathPreview
+                                                                    content={value || ``}
+                                                                    className="flex-1 pt-1"
+                                                                />
+                                                            </div>
+                                                            {icon}
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+
+                                            {!currentReviewQuestion.is_correct && (
+                                                <div className={`mt-6 p-4 rounded-xl border text-sm flex items-start ${currentReviewQuestion.student_answer ? 'bg-amber-50 border-amber-200 text-amber-800' : 'bg-gray-50 border-gray-200 text-gray-600'}`}>
+                                                    <AlertCircle className="w-5 h-5 mr-3 flex-shrink-0 mt-0.5" />
+                                                    <div>
+                                                        <span className="font-bold">Result Analysis:</span>{" "}
+                                                        {!currentReviewQuestion.student_answer ? (
+                                                            <span className="text-red-500 font-medium">You did not answer this question. <span className="text-gray-700">The correct answer is option <strong>{currentReviewQuestion.correct_option}</strong>.</span></span>
+                                                        ) : (
+                                                            <span>Your choice was option <strong>{currentReviewQuestion.student_answer}</strong>, but the correct answer is <strong>{currentReviewQuestion.correct_option}</strong>.</span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </CardContent>
+
+                                        {/* Pagination Controls */}
+                                        <div className="px-6 py-4 bg-gray-50/50 border-t flex justify-between items-center">
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => setCurrentReviewIndex(prev => prev - 1)}
+                                                disabled={currentReviewIndex === 0}
+                                                className="w-24"
+                                            >
+                                                <ChevronLeft className="w-4 h-4 mr-1" /> Previous
+                                            </Button>
+
+                                            <Button
+                                                variant="default"
+                                                size="sm"
+                                                onClick={() => setCurrentReviewIndex(prev => prev + 1)}
+                                                disabled={currentReviewIndex === currentReviewQuestions.length - 1}
+                                                className="w-24"
+                                            >
+                                                Next <ChevronRight className="w-4 h-4 ml-1" />
+                                            </Button>
+                                        </div>
+                                    </Card>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
+
                 {/* Historic Attempts */}
                 {allAttempts.length > 1 && (
                     <Card className="shadow-card border-0">
@@ -151,7 +304,7 @@ export default function Results({ practice, latestAttempt, allAttempts }: Result
                                 {allAttempts.map((attempt, index) => (
                                     <div key={attempt.id} className={`p-4 flex items-center justify-between hover:bg-gray-50 transition-colors ${attempt.id === latestAttempt.id ? 'bg-college-maroon/5' : ''}`}>
                                         <div className="flex items-center space-x-4">
-                                            <div className="w-10 h-10 rounded-full bg-gray-100 flexitems-center justify-center font-bold text-gray-500 flex items-center">
+                                            <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center font-bold text-gray-500 flex items-center">
                                                 #{allAttempts.length - index}
                                             </div>
                                             <div>
@@ -173,12 +326,14 @@ export default function Results({ practice, latestAttempt, allAttempts }: Result
                     <Button asChild variant="outline" className="px-8 py-6 text-lg">
                         <Link href="/student/dashboard">Return to Dashboard</Link>
                     </Button>
-                    <Button asChild className="px-8 py-6 text-lg  text-white shadow-lg shadow-college-maroon/30">
-                        <Link href={`/student/practice/${practice.id}/take-test`}>
-                            <PlayCircle className="w-5 h-5 mr-2" />
-                            Retake Practice Test
-                        </Link>
-                    </Button>
+                    {(practice.practice_limit === 0 || allAttempts.length < practice.practice_limit) && (
+                        <Button asChild className="px-8 py-6 text-lg  text-white shadow-lg shadow-college-maroon/30">
+                            <Link href={`/student/practice/${practice.id}/take-test`}>
+                                <PlayCircle className="w-5 h-5 mr-2" />
+                                Retake Practice Test
+                            </Link>
+                        </Button>
+                    )}
                 </div>
             </main>
         </div>

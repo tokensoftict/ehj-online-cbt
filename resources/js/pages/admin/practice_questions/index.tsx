@@ -48,6 +48,8 @@ interface PracticeQuestion {
     duration: number;
     total_score_per_question: number;
     instruction: string;
+    practice_limit: number;
+    show_result: boolean;
     is_approved: boolean;
     question_infos: QuestionBank[];
 }
@@ -68,6 +70,8 @@ export default function PracticeQuestions({ url, questionBanks, classes }: { url
         end_schedule_date: '',
         duration: '',
         total_score_per_question: '1',
+        practice_limit: '0',
+        show_result: true,
         instruction: '',
     });
 
@@ -91,6 +95,8 @@ export default function PracticeQuestions({ url, questionBanks, classes }: { url
                 end_schedule_date: formatDateTimeLocal(practiceQuestion.end_schedule_date),
                 duration: practiceQuestion.duration?.toString() || '',
                 total_score_per_question: practiceQuestion.total_score_per_question?.toString() || '1',
+                practice_limit: practiceQuestion.practice_limit?.toString() || '0',
+                show_result: practiceQuestion.show_result ?? true,
                 instruction: practiceQuestion.instruction || '',
             });
         } else {
@@ -256,123 +262,154 @@ export default function PracticeQuestions({ url, questionBanks, classes }: { url
 
                 <CreateDialog className="sm:max-w-[700px]" title={practiceQuestion?.id ? "Update Practice Question" : "Create Practice Question"} open={open} setOpen={setOpen}>
                     <form onSubmit={handleSubmit} className="space-y-6">
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="max-h-[70vh] overflow-y-auto px-1 py-1">
+                            <div className="grid grid-cols-2 gap-4">
 
-                            {/* Full Width Title */}
-                            <div className="col-span-2 grid gap-2">
-                                <Label htmlFor="title">Name</Label>
-                                <Input
-                                    id="title"
-                                    value={data.title}
-                                    onChange={(e) => setData('title', e.target.value)}
-                                    placeholder="e.g., Mock Exam Term 1"
-                                />
-                                <InputError message={errors.title} />
-                            </div>
-
-                            <div className="grid gap-2">
-                                <Label>Class</Label>
-                                <Select value={data.student_class_id} onValueChange={(v) => setData('student_class_id', v)}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select Class" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {classes?.map((c) => (
-                                            <SelectItem key={c.id} value={c.id.toString()}>
-                                                {c.class_name.name} {c.class_section.name}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                <InputError message={errors.student_class_id} />
-                            </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="total_score_per_question">Score For Each Question</Label>
-                                <Input
-                                    id="total_score_per_question"
-                                    type="number"
-                                    value={data.total_score_per_question}
-                                    onChange={(e) => setData('total_score_per_question', e.target.value)}
-                                    placeholder="e.g. 1"
-                                />
-                                <InputError message={errors.total_score_per_question} />
-                            </div>
-
-
-                            <div className="grid gap-2">
-                                <Label htmlFor="start_schedule_date">Start Schedule Date</Label>
-                                <Input
-                                    id="start_schedule_date"
-                                    type="datetime-local"
-                                    value={data.start_schedule_date}
-                                    onChange={(e) => setData('start_schedule_date', e.target.value)}
-                                />
-                                <InputError message={errors.start_schedule_date} />
-                            </div>
-
-                            <div className="grid gap-2">
-                                <Label htmlFor="end_schedule_date">End Schedule Date</Label>
-                                <Input
-                                    id="end_schedule_date"
-                                    type="datetime-local"
-                                    value={data.end_schedule_date}
-                                    onChange={(e) => setData('end_schedule_date', e.target.value)}
-                                />
-                                <InputError message={errors.end_schedule_date} />
-                            </div>
-
-                            <div className="grid gap-2">
-                                <Label htmlFor="total_score_per_question">Practice Duration(Minutes)</Label>
-                                <Input
-                                    id="duration"
-                                    type="number"
-                                    value={data.duration}
-                                    onChange={(e) => setData('duration', e.target.value)}
-                                    placeholder="e.g. 60"
-                                />
-                                <InputError message={errors.duration} />
-                            </div>
-
-
-                            <div className="col-span-2 grid gap-2">
-                                <Label htmlFor="instruction">Practice Instruction</Label>
-
-                                <div className="border rounded-md shadow-sm overflow-hidden bg-background">
-                                    <CK4Editor
-                                        initData={data.instruction}
-                                        onChange={(e: any) => setData('instruction', e.editor.getData())}
-                                        id={`instruction-editor-${practiceQuestion?.id || 'new'}`}
+                                {/* Full Width Title */}
+                                <div className="col-span-2 grid gap-2">
+                                    <Label htmlFor="title">Name</Label>
+                                    <Input
+                                        id="title"
+                                        value={data.title}
+                                        onChange={(e) => setData('title', e.target.value)}
+                                        placeholder="e.g., Mock Exam Term 1"
                                     />
+                                    <InputError message={errors.title} />
                                 </div>
-                                <InputError message={errors.instruction} />
-                            </div>
 
-                            <div className="col-span-2 grid gap-2">
-                                <div className="flex justify-between items-center mb-1">
-                                    <Label>Select Question Banks</Label>
-
+                                <div className="grid gap-2">
+                                    <Label>Class</Label>
+                                    <Select value={data.student_class_id} onValueChange={(v) => setData('student_class_id', v)}>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select Class" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {classes?.map((c) => (
+                                                <SelectItem key={c.id} value={c.id.toString()}>
+                                                    {c.class_name.name} {c.class_section.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <InputError message={errors.student_class_id} />
                                 </div>
-                                <div className="max-h-[150px] overflow-y-auto space-y-2 border p-3 rounded-md bg-muted/40">
-                                    {filteredBanks.length === 0 ? (
-                                        <p className="text-sm text-center text-muted-foreground py-4">
-                                            {data.general_subject_id ? "No question banks found for the selected Subject." : "Please select a Subject to view available Question Banks."}
+                                <div className="grid gap-2">
+                                    <Label htmlFor="total_score_per_question">Score For Each Question</Label>
+                                    <Input
+                                        id="total_score_per_question"
+                                        type="number"
+                                        value={data.total_score_per_question}
+                                        onChange={(e) => setData('total_score_per_question', e.target.value)}
+                                        placeholder="e.g. 1"
+                                    />
+                                    <InputError message={errors.total_score_per_question} />
+                                </div>
+
+
+                                <div className="grid gap-2">
+                                    <Label htmlFor="start_schedule_date">Start Schedule Date</Label>
+                                    <Input
+                                        id="start_schedule_date"
+                                        type="datetime-local"
+                                        value={data.start_schedule_date}
+                                        onChange={(e) => setData('start_schedule_date', e.target.value)}
+                                    />
+                                    <InputError message={errors.start_schedule_date} />
+                                </div>
+
+                                <div className="grid gap-2">
+                                    <Label htmlFor="end_schedule_date">End Schedule Date</Label>
+                                    <Input
+                                        id="end_schedule_date"
+                                        type="datetime-local"
+                                        value={data.end_schedule_date}
+                                        onChange={(e) => setData('end_schedule_date', e.target.value)}
+                                    />
+                                    <InputError message={errors.end_schedule_date} />
+                                </div>
+
+                                <div className="grid gap-2">
+                                    <Label htmlFor="total_score_per_question">Practice Duration(Minutes)</Label>
+                                    <Input
+                                        id="duration"
+                                        type="number"
+                                        value={data.duration}
+                                        onChange={(e) => setData('duration', e.target.value)}
+                                        placeholder="e.g. 60"
+                                    />
+                                    <InputError message={errors.duration} />
+                                </div>
+
+                                <div className="grid gap-2">
+                                    <Label htmlFor="practice_limit">Practice Limit (0 for unlimited)</Label>
+                                    <Input
+                                        id="practice_limit"
+                                        type="number"
+                                        value={data.practice_limit}
+                                        onChange={(e) => setData('practice_limit', e.target.value)}
+                                        placeholder="e.g. 0"
+                                    />
+                                    <InputError message={errors.practice_limit} />
+                                </div>
+
+                                <div className="flex flex-row items-center space-x-3 space-y-0 rounded-md border p-4 shadow-sm h-full">
+                                    <Checkbox
+                                        id="show_result"
+                                        checked={data.show_result}
+                                        onCheckedChange={(checked) => setData('show_result', !!checked)}
+                                    />
+                                    <div className="space-y-1 leading-none">
+                                        <Label htmlFor="show_result" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                                            Show Result to Student
+                                        </Label>
+                                        <p className="text-[0.8rem] text-muted-foreground">
+                                            Students will see their performance after submission.
                                         </p>
-                                    ) : (
-                                        filteredBanks.map((bank) => (
-                                            <div key={bank.id} className="flex flex-row items-center space-x-3 space-y-0 relative items-start">
-                                                <Checkbox
-                                                    id={`bank-${bank.id}`}
-                                                    checked={data.question_info_ids.includes(bank.id)}
-                                                    onCheckedChange={() => toggleBankSelection(bank.id)}
-                                                />
-                                                <label htmlFor={`bank-${bank.id}`} className="font-normal text-sm cursor-pointer leading-snug">
-                                                    {bank.name} <span className="text-muted-foreground text-xs">({bank.student_class?.class_name?.name} {bank.student_class?.class_section?.name})</span>
-                                                </label>
-                                            </div>
-                                        ))
-                                    )}
+                                    </div>
+                                    <InputError message={errors.show_result} />
                                 </div>
-                                <InputError message={errors.question_info_ids} />
+
+
+                                <div className="col-span-2 grid gap-2">
+                                    <Label htmlFor="instruction">Practice Instruction</Label>
+
+                                    <div className="border rounded-md shadow-sm overflow-hidden bg-background">
+                                        <CK4Editor
+                                            initData={data.instruction}
+                                            onChange={(e: any) => setData('instruction', e.editor.getData())}
+                                            id={`instruction-editor-${practiceQuestion?.id || 'new'}`}
+                                        />
+                                    </div>
+                                    <InputError message={errors.instruction} />
+                                </div>
+
+                                <div className="col-span-2 grid gap-2">
+                                    <div className="flex justify-between items-center mb-1">
+                                        <Label>Select Question Banks</Label>
+
+                                    </div>
+                                    <div className="max-h-[150px] overflow-y-auto space-y-2 border p-3 rounded-md bg-muted/40">
+                                        {filteredBanks.length === 0 ? (
+                                            <p className="text-sm text-center text-muted-foreground py-4">
+                                                {data.general_subject_id ? "No question banks found for the selected Subject." : "Please select a Subject to view available Question Banks."}
+                                            </p>
+                                        ) : (
+                                            filteredBanks.map((bank) => (
+                                                <div key={bank.id} className="flex flex-row items-center space-x-3 space-y-0 relative items-start">
+                                                    <Checkbox
+                                                        id={`bank-${bank.id}`}
+                                                        checked={data.question_info_ids.includes(bank.id)}
+                                                        onCheckedChange={() => toggleBankSelection(bank.id)}
+                                                    />
+                                                    <label htmlFor={`bank-${bank.id}`} className="font-normal text-sm cursor-pointer leading-snug">
+                                                        {bank.name} <span className="text-muted-foreground text-xs">({bank.student_class?.class_name?.name} {bank.student_class?.class_section?.name})</span>
+                                                    </label>
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+                                    <InputError message={errors.question_info_ids} />
+                                </div>
                             </div>
                         </div>
 

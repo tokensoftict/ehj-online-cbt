@@ -34,12 +34,28 @@ class DashboardController extends Controller
             ->where('end_schedule_date', '>=', $now)
             ->get();
 
+        // Fetch attempt counts for these practice questions
+        $resultsCount = \App\Models\PracticeResult::where('student_id', $student->id)
+            ->whereIn('practice_question_id', $practiceQuestions->pluck('id'))
+            ->groupBy('practice_question_id')
+            ->selectRaw('practice_question_id, count(*) as count')
+            ->pluck('count', 'practice_question_id');
+
         // Check for active sessions for these practice questions
         $activeSessionIds = \App\Models\TestSession::where('student_id', $student->id)
             ->whereIn('practice_question_id', $practiceQuestions->pluck('id'))
             ->where('is_completed', false)
             ->pluck('practice_question_id')
             ->toArray();
+
+        // Filter out practice questions where limit is reached, unless there's an active session
+        $practiceQuestions = $practiceQuestions->filter(function ($pq) use ($resultsCount, $activeSessionIds) {
+            $hasActiveSession = in_array($pq->id, $activeSessionIds);
+            if ($hasActiveSession) return true; // Always show if they can resume
+
+            $count = $resultsCount[$pq->id] ?? 0;
+            return $pq->practice_limit === 0 || $count < $pq->practice_limit;
+        })->values();
 
         $practiceQuestions->map(function ($pq) use ($activeSessionIds) {
             $pq->has_active_session = in_array($pq->id, $activeSessionIds);

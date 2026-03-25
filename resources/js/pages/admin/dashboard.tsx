@@ -93,7 +93,7 @@ const Dashboard = ({ stats: serverStats, systemOverview, recentActivities }: Das
                 <div>
                     <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
                     <p className="text-muted-foreground">
-                        Welcome back! Here's what's happening at EHJ Model College.
+                        Welcome! Here's what's happening at EHJ Model College.
                     </p>
                 </div>
                 {/* Stats Cards */}

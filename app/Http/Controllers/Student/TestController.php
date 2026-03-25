@@ -32,6 +32,14 @@ class TestController extends Controller
             ->where('end_schedule_date', '>=', $now)
             ->firstOrFail();
 
+        $attemptsCount = PracticeResult::where('student_id', $student->id)
+            ->where('practice_question_id', $practice->id)
+            ->count();
+
+        if ($practice->practice_limit > 0 && $attemptsCount >= $practice->practice_limit) {
+            return redirect()->route('student.dashboard')->with('error', 'You have reached the maximum number of attempts for this practice.');
+        }
+
         // Calculate total questions by summing counts from each info
         $totalQuestions = 0;
         foreach ($practice->question_infos as $info) {
@@ -47,6 +55,7 @@ class TestController extends Controller
             'practice' => $practice,
             'totalQuestions' => $totalQuestions,
             'hasActiveSession' => $hasActiveSession,
+            'attemptsCount' => $attemptsCount,
         ]);
     }
 
@@ -68,6 +77,22 @@ class TestController extends Controller
             ->where('start_schedule_date', '<=', $now)
             ->where('end_schedule_date', '>=', $now)
             ->firstOrFail();
+
+        $attemptsCount = PracticeResult::where('student_id', $student->id)
+            ->where('practice_question_id', $practice->id)
+            ->count();
+
+        if ($practice->practice_limit > 0 && $attemptsCount >= $practice->practice_limit) {
+            // Check if there's an active session they can resume
+            $hasActiveSession = TestSession::where('student_id', $student->id)
+                ->where('practice_question_id', $practice->id)
+                ->where('is_completed', false)
+                ->exists();
+
+            if (!$hasActiveSession) {
+                return redirect()->route('student.dashboard')->with('error', 'You have reached the maximum number of attempts for this practice.');
+            }
+        }
 
         // 1. Find existing session or create new one
         $session = TestSession::where('student_id', $student->id)
@@ -221,6 +246,10 @@ class TestController extends Controller
             'subject_scores' => $subjectScores,
         ]);
 
+        if (!$practice->show_result) {
+            return redirect()->route('student.dashboard')->with('success', 'Practice submitted successfully! Your results will be reviewed by the administrator.');
+        }
+
         return redirect()->route('student.practice.results', ['id' => $practice->id, 'attempt_id' => $result->id]);
     }
 
@@ -229,7 +258,11 @@ class TestController extends Controller
         $student = Auth::guard('student')->user();
         $studentId = $student->id ?? clone $student->user_id;
 
-        $practice = PracticeQuestion::findOrFail($id);
+        $practice = PracticeQuestion::with(['question_infos.questions_and_options', 'question_infos.general_subject'])->findOrFail($id);
+
+        if (!$practice->show_result) {
+            return redirect()->route('student.dashboard')->with('error', 'Results for this practice are not viewable at this time.');
+        }
 
         $query = PracticeResult::where('student_id', $studentId)
             ->where('practice_question_id', $id)
@@ -246,10 +279,46 @@ class TestController extends Controller
             ? $query->where('id', $attemptId)->firstOrFail()
             : $query->firstOrFail();
 
+        // Format questions for review
+        $reviewData = [];
+        $answers = $latestAttempt->answers_data ?? [];
+
+        foreach ($practice->question_infos as $info) {
+            $subjectName = $info->general_subject ? $info->general_subject->name : $info->name;
+            if (!isset($reviewData[$subjectName])) {
+                $reviewData[$subjectName] = [];
+            }
+
+            foreach ($info->questions_and_options as $q) {
+                // Determine if correct
+                $studentAnswer = $answers[$q->id] ?? null;
+                $isCorrect = false;
+                if ($studentAnswer && strtolower($studentAnswer) === strtolower($q->correct_option)) {
+                    $isCorrect = true;
+                }
+
+                $reviewData[$subjectName][] = [
+                    'id' => $q->id,
+                    'question' => $q->question,
+                    'options' => [
+                        'A' => $q->a,
+                        'B' => $q->b,
+                        'C' => $q->c,
+                        'D' => $q->d,
+                    ],
+                    'correct_option' => $q->correct_option,
+                    'student_answer' => $studentAnswer,
+                    'is_correct' => $isCorrect,
+                    'question_no' => $q->question_no,
+                ];
+            }
+        }
+
         return Inertia::render('student/test/results', [
             'practice' => $practice,
             'latestAttempt' => $latestAttempt,
-            'allAttempts' => $allAttempts
+            'allAttempts' => $allAttempts,
+            'reviewData' => $reviewData
         ]);
     }
 }

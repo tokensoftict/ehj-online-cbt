@@ -34,12 +34,12 @@ const Login = () => {
             {({ processing, errors }) => (
               <>
                 <div className="space-y-2">
-                  <Label htmlFor="username">Registration Number</Label>
+                  <Label htmlFor="username">Admission Number</Label>
                   <Input
                     id="username"
                     type="text"
                     name="reg_number"
-                    placeholder="Enter your Registration Number"
+                    placeholder="Enter your Admission Number"
                     className="h-11"
                   />
                   <InputError message={errors.reg_number} />
