@@ -11,7 +11,8 @@ use App\Models\QuestionsAndOption;
 use Illuminate\Http\Request;
 use Illuminate\Support\MessageBag;
 use Inertia\Inertia;
-use Intervention\Image\Laravel\Facades\Image;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver;
 
 class QuestionController extends Controller
 {
@@ -184,29 +185,37 @@ class QuestionController extends Controller
 
         $images = $dom->getElementsByTagName('img');
 
+
+
+        $manager = new ImageManager(new Driver());
+
         foreach ($images as $image) {
             $imageSrc = $image->getAttribute('src');
 
-            if (preg_match('/data:image/', $imageSrc)) {
+            if (preg_match('/^data:image/', $imageSrc)) {
 
-                preg_match('/data:image\/(?<mime>.*?)\;/', $imageSrc, $mime);
+                preg_match('/data:image\/(?<mime>.*?);/', $imageSrc, $mime);
                 $mimeType = $mime['mime']; // png, jpeg, webp, etc.
 
                 $filename = uniqid();
-                $filePath = "post_image/$filename.$mimeType";
+                $filePath = "post_image/{$filename}.{$mimeType}";
 
-                // Create directory if not exists
-                if (!file_exists(public_path('post_image'))) {
-                    mkdir(public_path('post_image'), 0777, true);
+                // Ensure directory exists
+                $directory = public_path('post_image');
+                if (!file_exists($directory)) {
+                    mkdir($directory, 0777, true);
                 }
 
-                Image::make($imageSrc)
-                    ->encode($mimeType, 100)
-                    ->save(public_path($filePath));
+                // Read base64 image
+                $img = $manager->read($imageSrc);
+
+                // Save image
+                $img->toJpeg(100)->save(public_path($filePath));
+                // OR dynamically:
+                // $img->encodeByExtension($mimeType)->save(public_path($filePath));
 
                 $newImageSrc = asset($filePath);
 
-                $image->removeAttribute('src');
                 $image->setAttribute('src', $newImageSrc);
             }
         }
